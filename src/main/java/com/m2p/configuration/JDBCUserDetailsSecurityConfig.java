@@ -34,7 +34,7 @@ return http.build();
 
 @Bean
     public PasswordEncoder passwordEncoder(){
-        return new BCryptPasswordEncoder( BCryptPasswordEncoder.BCryptVersion.$2Y,100);
+        return new BCryptPasswordEncoder();
 
-    }xx
+    }
 }

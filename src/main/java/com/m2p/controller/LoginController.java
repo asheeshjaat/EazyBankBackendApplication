@@ -31,6 +31,9 @@ public class LoginController {
         log.info("receive request of customer "+customer.getName());
         ResponseEntity response=null;
         try{
+            if (customerRepository.findByName(customer.getName()).size()>0){
+                throw new Exception("user already exist");
+            }
             String hashed=bCryptPasswordEncoder.encode(customer.getPassword());
             customer.setPassword(hashed);
             savedCustomer=customerRepository.save(customer);
