@@ -25,7 +25,7 @@ public class JDBCUserDetailsSecurityConfig {
          http.csrf().disable().
                  authorizeHttpRequests()
                 .requestMatchers("/register/customer").permitAll()
-                 .requestMatchers("/myAccount","/myBalance","/myCards","/myLoans").authenticated()
+                 .requestMatchers("/myAccount","/myBalance","/myCards","/myLoans","/user").authenticated()
                 .and()
                 .httpBasic()
                 .and().formLogin();
