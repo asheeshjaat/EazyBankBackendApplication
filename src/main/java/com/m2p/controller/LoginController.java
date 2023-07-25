@@ -17,6 +17,7 @@ import java.util.Date;
 import java.util.List;
 
 @RestController
+@Slf4j
 public class LoginController {
 
     @Autowired
@@ -27,6 +28,7 @@ public class LoginController {
 
     @PostMapping("/register")
     public ResponseEntity<String> registerUser(@RequestBody Customer customer) {
+        log.info("request recevive of cutomner ",customer);
         Customer savedCustomer = null;
         ResponseEntity response = null;
         try {
