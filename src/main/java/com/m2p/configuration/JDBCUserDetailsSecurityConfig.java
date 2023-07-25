@@ -1,5 +1,7 @@
 package com.m2p.configuration;
 
+import com.m2p.filter.JWTTokenGeneratorFilter;
+import com.m2p.filter.JWTTokenValidatorFilter;
 import com.m2p.filter.csrfCookiesFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.annotation.Bean;
@@ -39,8 +41,7 @@ public class JDBCUserDetailsSecurityConfig {
     requestHandler.setCsrfRequestAttributeName("_csrf");
 
 
-         http.securityContext().requireExplicitSave(false)
-                 .and().sessionManagement(session->session.sessionCreationPolicy(SessionCreationPolicy.ALWAYS))
+         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
                  .cors().configurationSource(new CorsConfigurationSource() {
              @Override
              public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
@@ -49,19 +50,22 @@ public class JDBCUserDetailsSecurityConfig {
                  config.setAllowedHeaders(Collections.singletonList("*"));
                  config.setAllowCredentials(true);
                  config.setAllowedMethods(Collections.singletonList("*"));
+                 config.setExposedHeaders(Collections.singletonList("Authorization"));//for exposing JWT token to web application
                  config.setMaxAge(3600L);
              return config;
              }
-         }).and().csrf((csrf)->csrf.csrfTokenRequestHandler(requestHandler).ignoringRequestMatchers("/notices","/register").csrfTokenRepository((CookieCsrfTokenRepository.withHttpOnlyFalse())))
+         }).and().csrf((csrf)->csrf.csrfTokenRequestHandler(requestHandler).ignoringRequestMatchers("/register").csrfTokenRepository((CookieCsrfTokenRepository.withHttpOnlyFalse())))
                  .addFilterAfter(new csrfCookiesFilter(), BasicAuthenticationFilter.class)
+                 .addFilterAfter(new JWTTokenGeneratorFilter(),BasicAuthenticationFilter.class)
+                 .addFilterBefore(new JWTTokenValidatorFilter(),BasicAuthenticationFilter.class)
                  .authorizeHttpRequests()
-                .requestMatchers("/register").permitAll()
-                 .requestMatchers("/myAccount","/myBalance","/myCards","/myLoans").authenticated()
+                     .requestMatchers("/register").permitAll()
+                     .requestMatchers("/myAccount","/myBalance","/myCards","/myLoans").authenticated()
 //                 .requestMatchers("/notices").hasAnyAuthority("USER","LOAN")--FOR AUTORITY PURPOSE
-                 .requestMatchers("/notices").hasRole("USER")
-                .and()
-                .httpBasic()
-                .and().formLogin();
+                        .requestMatchers("/notices").hasAnyRole("USER","ADMIN")
+                       .and()
+                      .httpBasic()
+                      .and().formLogin();
 return http.build();
     }
 
