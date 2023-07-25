@@ -1,14 +1,15 @@
 package com.m2p.repository;
 
-import com.m2p.model.Customer;
+
+import com.m2p.model.Cards;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 @Repository
-public interface CustomerRepository extends CrudRepository<Customer, Long> {
+public interface CardsRepository extends CrudRepository<Cards, Long> {
+	
+	List<Cards> findByCustomerId(int customerId);
 
-    List<Customer> findByEmail(String email);
-    
 }

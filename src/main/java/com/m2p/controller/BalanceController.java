@@ -1,12 +1,28 @@
 package com.m2p.controller;
 
+import com.m2p.model.AccountTransactions;
+import com.m2p.repository.AccountTransactionsRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 public class BalanceController {
+
+    @Autowired
+    private AccountTransactionsRepository accountTransactionsRepository;
+
     @GetMapping("/myBalance")
-    public String getAccountDetails(){
-        return "Here is the balance details of User";
+    public List<AccountTransactions> getBalanceDetails(@RequestParam int id) {
+        List<AccountTransactions> accountTransactions = accountTransactionsRepository.
+                findByCustomerIdOrderByTransactionDtDesc(id);
+        if (accountTransactions != null ) {
+            return accountTransactions;
+        }else {
+            return null;
+        }
     }
 }
