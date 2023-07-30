@@ -13,6 +13,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.provisioning.JdbcUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
@@ -40,6 +41,9 @@ public class JDBCUserDetailsSecurityConfig {
      CsrfTokenRequestAttributeHandler requestHandler=new CsrfTokenRequestAttributeHandler();
     requestHandler.setCsrfRequestAttributeName("_csrf");
 
+    JwtAuthenticationConverter jwtAuthenticationConverter=new JwtAuthenticationConverter();
+    jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(new KeyclockRoleConverter());
+
 
          http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
                  .cors().configurationSource(new CorsConfigurationSource() {
@@ -56,22 +60,21 @@ public class JDBCUserDetailsSecurityConfig {
              }
          }).and().csrf((csrf)->csrf.csrfTokenRequestHandler(requestHandler).ignoringRequestMatchers("/register").csrfTokenRepository((CookieCsrfTokenRepository.withHttpOnlyFalse())))
                  .addFilterAfter(new csrfCookiesFilter(), BasicAuthenticationFilter.class)
-                 .addFilterAfter(new JWTTokenGeneratorFilter(),BasicAuthenticationFilter.class)
-                 .addFilterBefore(new JWTTokenValidatorFilter(),BasicAuthenticationFilter.class)
+                // .addFilterAfter(new JWTTokenGeneratorFilter(),BasicAuthenticationFilter.class)
+//                 .addFilterBefore(new JWTTokenValidatorFilter(),BasicAuthenticationFilter.class)
                  .authorizeHttpRequests()
                      .requestMatchers("/register").permitAll()
                      .requestMatchers("/myAccount","/myBalance","/myCards","/myLoans").authenticated()
 //                 .requestMatchers("/notices").hasAnyAuthority("USER","LOAN")--FOR AUTORITY PURPOSE
                         .requestMatchers("/notices").hasAnyRole("USER","ADMIN")
                        .and()
-                      .httpBasic()
-                      .and().formLogin();
+                 .oauth2ResourceServer().jwt().jwtAuthenticationConverter(jwtAuthenticationConverter);
 return http.build();
     }
 
-@Bean
-    public PasswordEncoder passwordEncoder(){
-        return new BCryptPasswordEncoder();
-
-    }
+//@Bean
+//    public PasswordEncoder passwordEncoder(){
+//        return new BCryptPasswordEncoder();
+//
+//    }
 }
